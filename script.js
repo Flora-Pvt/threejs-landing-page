@@ -61,6 +61,30 @@ const addStar = () => {
 
 Array(200).fill().forEach(addStar)
 
+// Globe
+const globe = new THREE.Mesh(
+  new THREE.SphereGeometry(3, 32, 32),
+  new THREE.MeshStandardMaterial({ color: 'blue' })
+)
+globe.position.z = 30
+globe.position.setX(-10)
+scene.add(globe)
+
+// Move camera on scroll
+const moveCamera = () => {
+  // Calculate scroll from top
+  const t = document.body.getBoundingClientRect().top
+
+  globe.rotation.x += 0.05
+  globe.rotation.y += 0.075
+  globe.rotation.z += 0.05
+
+  camera.position.x = t * -0.01
+  camera.position.y = t * -0.0002
+  camera.position.z = t * -0.0002
+}
+document.body.onscroll = moveCamera
+
 // Animation
 const animate = () => {
   requestAnimationFrame(animate)
