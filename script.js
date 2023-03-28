@@ -33,21 +33,23 @@ const ambientLight = new THREE.AmbientLight(0xffffff)
 scene.add(ambientLight)
 
 // Helpers
-const lightHelper = new THREE.PointLightHelper(pointLight)
-scene.add(lightHelper)
+// const lightHelper = new THREE.PointLightHelper(pointLight)
+// scene.add(lightHelper)
 
-const gridHelper = new THREE.GridHelper(200, 50)
-scene.add(gridHelper)
+// const gridHelper = new THREE.GridHelper(200, 50)
+// scene.add(gridHelper)
 
 // Torus
 const torusGeometry = new THREE.TorusGeometry(10, 3, 16, 100)
 const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xff6347 })
 const torus = new THREE.Mesh(torusGeometry, torusMaterial)
+torus.position.x = 15
+torus.position.z = 5
 scene.add(torus)
 
 // Stars
 const addStar = () => {
-  const starGeometry = new THREE.SphereGeometry(0.25, 24, 24)
+  const starGeometry = new THREE.SphereGeometry(0.05, 24, 24)
   const starMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff })
   const star = new THREE.Mesh(starGeometry, starMaterial)
 
@@ -61,29 +63,44 @@ const addStar = () => {
 
 Array(200).fill().forEach(addStar)
 
-// Globe
-const globe = new THREE.Mesh(
-  new THREE.SphereGeometry(3, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 'blue' })
-)
-globe.position.z = 30
-globe.position.setX(-10)
-scene.add(globe)
-
 // Move camera on scroll
 const moveCamera = () => {
   // Calculate scroll from top
-  const t = document.body.getBoundingClientRect().top
+  const scrolled = document.body.getBoundingClientRect().top
+  const heightBreakPoint = -3200
 
-  globe.rotation.x += 0.05
-  globe.rotation.y += 0.075
-  globe.rotation.z += 0.05
-
-  camera.position.x = t * -0.01
-  camera.position.y = t * -0.0002
-  camera.position.z = t * -0.0002
+  if (scrolled > heightBreakPoint) {
+    torus.position.z = scrolled * 5 * 0.0025
+    camera.position.x = scrolled * -0.025
+  } else {
+    torus.position.z =
+      heightBreakPoint * 5 * -0.0025 - heightBreakPoint * 5 * -0.002
+    camera.position.x = heightBreakPoint * -0.025 + heightBreakPoint * 0.025
+  }
 }
 document.body.onscroll = moveCamera
+
+/**
+ * Sizes
+ */
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+}
+
+window.addEventListener('resize', () => {
+  // Update sizes
+  sizes.width = window.innerWidth
+  sizes.height = window.innerHeight
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height
+  camera.updateProjectionMatrix()
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
 
 // Animation
 const animate = () => {
