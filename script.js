@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import ThreeGlobe from 'three-globe'
 
 // Scene
 const scene = new THREE.Scene()
@@ -39,13 +40,19 @@ scene.add(ambientLight)
 // const gridHelper = new THREE.GridHelper(200, 50)
 // scene.add(gridHelper)
 
-// Torus
-const torusGeometry = new THREE.TorusGeometry(10, 3, 16, 100)
-const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xff6347 })
-const torus = new THREE.Mesh(torusGeometry, torusMaterial)
-torus.position.x = 15
-torus.position.z = 5
-scene.add(torus)
+// Globe
+const Globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: true })
+const globeMaterial = Globe.globeMaterial()
+globeMaterial.color = new THREE.Color(0x3a228a)
+globeMaterial.emissive = new THREE.Color(0x220038)
+globeMaterial.emissiveIntensity = 0.1
+globeMaterial.shininess = 0.7
+Globe.position.x = 125
+const globePositionZ = -300
+Globe.position.z = globePositionZ
+Globe.rotateY(-Math.PI * (5 / 9))
+Globe.rotateZ(-Math.PI / 6)
+scene.add(Globe)
 
 // Stars
 const addStar = () => {
@@ -70,12 +77,12 @@ const moveCamera = () => {
   const heightBreakPoint = -3200
 
   if (scrolled > heightBreakPoint) {
-    torus.position.z = scrolled * 5 * 0.0025
-    camera.position.x = scrolled * -0.025
+    // Globe.position.z = scrolled * globePositionZ * 0.0025
+    camera.position.x = scrolled * -0.185
   } else {
-    torus.position.z =
-      heightBreakPoint * 5 * -0.0025 - heightBreakPoint * 5 * -0.002
-    camera.position.x = heightBreakPoint * -0.025 + heightBreakPoint * 0.025
+    // Globe.position.z =
+    // heightBreakPoint * globePositionZ * -0.0025 - heightBreakPoint * globePositionZ * -0.002
+    camera.position.x = heightBreakPoint * -0.025 + heightBreakPoint * 0.05
   }
 }
 document.body.onscroll = moveCamera
@@ -106,9 +113,9 @@ window.addEventListener('resize', () => {
 const animate = () => {
   requestAnimationFrame(animate)
 
-  torus.rotation.x += 0.01
-  torus.rotation.y += 0.005
-  torus.rotation.z += 0.01
+  // torus.rotation.x += 0.01
+  // torus.rotation.y += 0.005
+  // torus.rotation.z += 0.01
 
   renderer.render(scene, camera)
 }

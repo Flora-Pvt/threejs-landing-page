@@ -1990,7 +1990,6 @@ a {
 }
 strong {
   font-family: Centrano2, sans-serif;
-  color: #222230;
   font-weight: 500;
 }
 figcaption {
@@ -2295,6 +2294,7 @@ figcaption {
   padding: 70px 50% 70px 70px;
   border-radius: 8px;
   background-color: #f6f6ff;
+  color: rgba(0, 0, 0, 0.8);
 }
 .abs-essayer-img {
   position: absolute;
@@ -2723,9 +2723,14 @@ figcaption {
   display: block;
 }
 .container-1160 {
-  width: 50%;
+  width: 100%;
   max-width: 1160px;
-  margin-left: 40px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.container-600 ~ .container-1160 {
+  width: 55%;
+  margin: 0;
 }
 .container-1160.top-btm-80 {
   margin-top: 80px;
@@ -3219,6 +3224,7 @@ figcaption {
   justify-content: space-between;
   border-radius: 8px;
   background-color: #fbf8f6;
+  color: black;
 }
 .tem-author {
   display: -webkit-box;
@@ -3411,7 +3417,7 @@ figcaption {
 }
 .aprop-item {
   margin-bottom: 80px;
-  opacity: 0.2;
+  opacity: 0.8;
 }
 .sand-wrapper {
   margin-top: 20px;
@@ -7192,7 +7198,7 @@ figcaption {
   -webkit-align-items: flex-start;
   -ms-flex-align: start;
   align-items: flex-start;
-  background-color: #fff;
+  color: #fff;
 }
 .image-5 {
   border-radius: 20px;
