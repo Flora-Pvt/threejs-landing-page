@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import ThreeGlobe from 'three-globe'
 
+import countries from './src/globe-data/custom.geo.json'
 // Scene
 const scene = new THREE.Scene()
 
@@ -12,7 +13,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 )
-camera.position.setZ(30)
+camera.position.setZ(250)
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -41,51 +42,118 @@ scene.add(ambientLight)
 // scene.add(gridHelper)
 
 // Globe
-const Globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: true })
+const Globe = new ThreeGlobe({
+  waitForGlobeReady: true,
+  animateIn: true,
+})
+  .hexPolygonsData(countries.features)
+  .hexPolygonResolution(3)
+  .hexPolygonMargin(0.7)
 const globeMaterial = Globe.globeMaterial()
 globeMaterial.color = new THREE.Color(0x3a228a)
 globeMaterial.emissive = new THREE.Color(0x220038)
 globeMaterial.emissiveIntensity = 0.1
 globeMaterial.shininess = 0.7
+
 Globe.position.x = 125
-const globePositionZ = -300
-Globe.position.z = globePositionZ
-Globe.rotateY(-Math.PI * (5 / 9))
-Globe.rotateZ(-Math.PI / 6)
+
 scene.add(Globe)
 
-// Stars
-const addStar = () => {
-  const starGeometry = new THREE.SphereGeometry(0.05, 24, 24)
-  const starMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff })
-  const star = new THREE.Mesh(starGeometry, starMaterial)
+// Animate Globe on scroll
+const scrollBreakPoints = [-500, -3000, -4500]
+let scrollPosition = 0
+let isRotated = false
+let hexSelection = ''
 
-  const [x, y, z] = Array(3)
-    .fill()
-    .map(() => THREE.MathUtils.randFloatSpread(100))
+const animateAfterTop = (newScrollPosition) => {
+  if (
+    newScrollPosition > scrollBreakPoints[0] &&
+    newScrollPosition >= scrollBreakPoints[1]
+  ) {
+    if (newScrollPosition > scrollPosition) Globe.position.x += 3
+    else Globe.position.x -= 3
+    Globe.position.z = 0
 
-  star.position.set(x, y, z)
-  scene.add(star)
-}
-
-Array(200).fill().forEach(addStar)
-
-// Move camera on scroll
-const moveCamera = () => {
-  // Calculate scroll from top
-  const scrolled = document.body.getBoundingClientRect().top
-  const heightBreakPoint = -3200
-
-  if (scrolled > heightBreakPoint) {
-    // Globe.position.z = scrolled * globePositionZ * 0.0025
-    camera.position.x = scrolled * -0.185
-  } else {
-    // Globe.position.z =
-    // heightBreakPoint * globePositionZ * -0.0025 - heightBreakPoint * globePositionZ * -0.002
-    camera.position.x = heightBreakPoint * -0.025 + heightBreakPoint * 0.05
+    Globe.rotation.x += 0.005
+    Globe.rotation.y -= 0.01
   }
 }
-document.body.onscroll = moveCamera
+
+const animateAfterFirstBreakpoint = (newScrollPosition) => {
+  if (
+    newScrollPosition <= scrollBreakPoints[0] &&
+    newScrollPosition > scrollBreakPoints[1]
+  ) {
+    if (newScrollPosition > scrollPosition) Globe.position.x += 3
+    else Globe.position.x -= 3
+    Globe.position.z = -200
+
+    Globe.rotation.x += 0.005
+    Globe.rotation.y -= 0.01
+
+    if (isRotated) {
+      Globe.position.x = -200
+      isRotated = false
+    }
+
+    if (hexSelection !== '') {
+      Globe.hexPolygonColor(() => '#ffffff')
+      hexSelection = ''
+    }
+  }
+}
+
+const animateAfterSecondBreakPoint = (newScrollPosition) => {
+  if (
+    newScrollPosition <= scrollBreakPoints[1] &&
+    newScrollPosition > scrollBreakPoints[2]
+  ) {
+    if (!isRotated) {
+      Globe.position.x = 150
+      Globe.position.z = 0
+
+      Globe.rotation.x = 0.75
+      Globe.rotation.y = -0.5
+      Globe.rotation.z = 0.5
+
+      isRotated = true
+    }
+
+    if (hexSelection !== 'France') {
+      Globe.hexPolygonColor((e) => {
+        if (e.properties?.name === 'France') return '#ff387f'
+        else return '#ffffff'
+      })
+
+      hexSelection = 'France'
+    }
+  }
+}
+
+const animateAfterThirdBreakPoint = (newScrollPosition) => {
+  if (newScrollPosition <= scrollBreakPoints[2]) {
+    if (hexSelection !== 'Europe') {
+      Globe.hexPolygonColor((e) => {
+        if (e.properties?.continent === 'Europe') return '#ff387f'
+        else return '#ffffff'
+      })
+
+      hexSelection = 'Europe'
+    }
+  }
+}
+
+const animateGlobeOnScroll = () => {
+  const newScrollPosition = document.body.getBoundingClientRect().top
+
+  animateAfterTop(newScrollPosition) // 0 -> -500
+  animateAfterFirstBreakpoint(newScrollPosition) // -500 -> -3000
+  animateAfterSecondBreakPoint(newScrollPosition) // -3000 -> -3500
+  animateAfterThirdBreakPoint(newScrollPosition) // -3500 -> bottom
+
+  scrollPosition = newScrollPosition
+}
+document.body.onscroll = animateGlobeOnScroll
 
 /**
  * Sizes
@@ -112,10 +180,6 @@ window.addEventListener('resize', () => {
 // Animation
 const animate = () => {
   requestAnimationFrame(animate)
-
-  // torus.rotation.x += 0.01
-  // torus.rotation.y += 0.005
-  // torus.rotation.z += 0.01
 
   renderer.render(scene, camera)
 }
