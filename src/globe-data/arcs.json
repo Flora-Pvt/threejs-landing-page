@@ -1,0 +1,32 @@
+[
+  {
+    "order": 1,
+    "from": "France",
+    "to": "Croatie",
+    "startLat": "48.864716",
+    "endLat": "45.8144400",
+    "startLng": "2.349014",
+    "endLng": "15.9779800",
+    "arcAlt": 0.05
+  },
+  {
+    "order": 2,
+    "from": "France",
+    "to": "Ukraine",
+    "startLat": "48.864716",
+    "endLat": "50.4546600",
+    "startLng": "2.349014",
+    "endLng": "30.5238000",
+    "arcAlt": 0.07
+  },
+  {
+    "order": 3,
+    "from": "France",
+    "to": "Portugual",
+    "startLat": "48.864716",
+    "endLat": "38.7166700",
+    "startLng": "2.349014",
+    "endLng": "-9.1333300",
+    "arcAlt": 0.05
+  }
+]

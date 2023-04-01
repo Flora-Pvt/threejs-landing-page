@@ -3,6 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import ThreeGlobe from 'three-globe'
 
 import countries from './src/globe-data/custom.geo.json'
+import arcs from './src/globe-data/arcs.json'
+
 // Scene
 const scene = new THREE.Scene()
 
@@ -34,13 +36,6 @@ scene.add(pointLight)
 const ambientLight = new THREE.AmbientLight(0xffffff)
 scene.add(ambientLight)
 
-// Helpers
-// const lightHelper = new THREE.PointLightHelper(pointLight)
-// scene.add(lightHelper)
-
-// const gridHelper = new THREE.GridHelper(200, 50)
-// scene.add(gridHelper)
-
 // Globe
 const Globe = new ThreeGlobe({
   waitForGlobeReady: true,
@@ -49,6 +44,7 @@ const Globe = new ThreeGlobe({
   .hexPolygonsData(countries.features)
   .hexPolygonResolution(3)
   .hexPolygonMargin(0.7)
+
 const globeMaterial = Globe.globeMaterial()
 globeMaterial.color = new THREE.Color(0x3a228a)
 globeMaterial.emissive = new THREE.Color(0x220038)
@@ -60,10 +56,11 @@ Globe.position.x = 125
 scene.add(Globe)
 
 // Animate Globe on scroll
-const scrollBreakPoints = [-500, -3000, -4500]
+const scrollBreakPoints = [-500, -3000, -4500, -5350]
 let scrollPosition = 0
 let isRotated = false
 let hexSelection = ''
+let isArcs = false
 
 const animateAfterTop = (newScrollPosition) => {
   if (
@@ -127,11 +124,41 @@ const animateAfterSecondBreakPoint = (newScrollPosition) => {
 
       hexSelection = 'France'
     }
+
+    if (isArcs) {
+      Globe.arcsData([])
+      isArcs = false
+    }
   }
 }
 
 const animateAfterThirdBreakPoint = (newScrollPosition) => {
   if (newScrollPosition <= scrollBreakPoints[2]) {
+    if (hexSelection !== 'France') {
+      Globe.hexPolygonColor((e) => {
+        if (e.properties?.name === 'France') return '#ff387f'
+        else return '#ffffff'
+      })
+
+      hexSelection = 'France'
+    }
+
+    if (!isArcs) {
+      Globe.arcsData(arcs)
+        .arcColor(() => '#ff387f')
+        .arcAltitude((e) => e.arcAlt)
+        .arcDashLength(0.7)
+        .arcDashGap(4)
+        .arcDashInitialGap((e) => e.order * 1)
+        .arcDashAnimateTime(1000)
+
+      isArcs = true
+    }
+  }
+}
+
+const animateAfterFourthBreakPoint = (newScrollPosition) => {
+  if (newScrollPosition <= scrollBreakPoints[3]) {
     if (hexSelection !== 'Europe') {
       Globe.hexPolygonColor((e) => {
         if (e.properties?.continent === 'Europe') return '#ff387f'
@@ -146,10 +173,11 @@ const animateAfterThirdBreakPoint = (newScrollPosition) => {
 const animateGlobeOnScroll = () => {
   const newScrollPosition = document.body.getBoundingClientRect().top
 
-  animateAfterTop(newScrollPosition) // 0 -> -500
-  animateAfterFirstBreakpoint(newScrollPosition) // -500 -> -3000
-  animateAfterSecondBreakPoint(newScrollPosition) // -3000 -> -3500
-  animateAfterThirdBreakPoint(newScrollPosition) // -3500 -> bottom
+  animateAfterTop(newScrollPosition)
+  animateAfterFirstBreakpoint(newScrollPosition)
+  animateAfterSecondBreakPoint(newScrollPosition)
+  animateAfterThirdBreakPoint(newScrollPosition)
+  animateAfterFourthBreakPoint(newScrollPosition)
 
   scrollPosition = newScrollPosition
 }
