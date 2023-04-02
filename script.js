@@ -56,11 +56,12 @@ Globe.position.x = 125
 scene.add(Globe)
 
 // Animate Globe on scroll
-const scrollBreakPoints = [-500, -3000, -4500, -5350]
+const scrollBreakPoints = [-500, -2500, -4500, -5350, -5900]
 let scrollPosition = 0
 let isRotated = false
 let hexSelection = ''
 let isArcs = false
+let isAltitude = false
 
 const animateAfterTop = (newScrollPosition) => {
   if (
@@ -94,7 +95,7 @@ const animateAfterFirstBreakpoint = (newScrollPosition) => {
     }
 
     if (hexSelection !== '') {
-      Globe.hexPolygonColor(() => '#ffffff')
+      Globe.hexPolygonsData(countries.features).polygonsData([])
       hexSelection = ''
     }
   }
@@ -117,10 +118,17 @@ const animateAfterSecondBreakPoint = (newScrollPosition) => {
     }
 
     if (hexSelection !== 'France') {
-      Globe.hexPolygonColor((e) => {
-        if (e.properties?.name === 'France') return '#ff387f'
-        else return '#ffffff'
-      })
+      Globe.hexPolygonsData([])
+        .polygonsData(countries.features)
+        .polygonSideColor(() => 'rgba(255, 255, 255, 0.04)')
+        .polygonCapColor((e) => {
+          if (e.properties?.name === 'France') return 'rgba(224, 43, 137, 0.1)'
+          else return 'rgba(255, 255, 255, 0.04)'
+        })
+        .polygonStrokeColor((e) => {
+          if (e.properties?.name === 'France') return '#ff387f'
+          else return 'rgba(255, 255, 255, 0.2)'
+        })
 
       hexSelection = 'France'
     }
@@ -135,9 +143,12 @@ const animateAfterSecondBreakPoint = (newScrollPosition) => {
 const animateAfterThirdBreakPoint = (newScrollPosition) => {
   if (newScrollPosition <= scrollBreakPoints[2]) {
     if (hexSelection !== 'France') {
-      Globe.hexPolygonColor((e) => {
+      Globe.polygonCapColor((e) => {
+        if (e.properties?.name === 'France') return 'rgba(224, 43, 137, 0.1)'
+        else return 'rgba(255, 255, 255, 0.04)'
+      }).polygonStrokeColor((e) => {
         if (e.properties?.name === 'France') return '#ff387f'
-        else return '#ffffff'
+        else return 'rgba(255, 255, 255, 0.2)'
       })
 
       hexSelection = 'France'
@@ -160,12 +171,56 @@ const animateAfterThirdBreakPoint = (newScrollPosition) => {
 const animateAfterFourthBreakPoint = (newScrollPosition) => {
   if (newScrollPosition <= scrollBreakPoints[3]) {
     if (hexSelection !== 'Europe') {
-      Globe.hexPolygonColor((e) => {
+      Globe.polygonCapColor((e) => {
+        if (e.properties?.continent === 'Europe')
+          return 'rgba(224, 43, 137, 0.1)'
+        else return 'rgba(255, 255, 255, 0.04)'
+      }).polygonStrokeColor((e) => {
         if (e.properties?.continent === 'Europe') return '#ff387f'
-        else return '#ffffff'
+        else return 'rgba(255, 255, 255, 0.2)'
       })
 
       hexSelection = 'Europe'
+    }
+  }
+
+  if (
+    newScrollPosition <= scrollBreakPoints[3] &&
+    newScrollPosition > scrollBreakPoints[4]
+  ) {
+    if (isAltitude) {
+      Globe.polygonAltitude(0)
+
+      Globe.rotation.x = 0.75
+      Globe.rotation.y = -0.5
+      Globe.rotation.z = 0.5
+
+      isAltitude = false
+    }
+  }
+}
+
+const animateAfterFifthBreakPoint = (newScrollPosition) => {
+  if (newScrollPosition <= scrollBreakPoints[4]) {
+    Globe.rotation.x -= 0.005
+    Globe.rotation.y += 0.025
+
+    if (!isAltitude) {
+      setTimeout(
+        () =>
+          Globe.polygonsTransitionDuration(100).polygonAltitude((e) => {
+            if (e.properties?.continent === 'Europe') return 0.25
+            else return 0
+          }),
+        100
+      )
+
+      isAltitude = true
+    }
+
+    if (isArcs) {
+      Globe.arcsData([])
+      isArcs = false
     }
   }
 }
@@ -178,6 +233,7 @@ const animateGlobeOnScroll = () => {
   animateAfterSecondBreakPoint(newScrollPosition)
   animateAfterThirdBreakPoint(newScrollPosition)
   animateAfterFourthBreakPoint(newScrollPosition)
+  animateAfterFifthBreakPoint(newScrollPosition)
 
   scrollPosition = newScrollPosition
 }
